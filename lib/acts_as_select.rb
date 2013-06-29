@@ -1,5 +1,6 @@
-require "acts_as_select/version"
+require 'acts_as_select/version'
+require 'acts_as_select/selection'
 
-module ActsAsSelect
-  # Your code goes here...
+class ActiveRecord::Base
+  extend ActsAsSelect
 end

@@ -1,6 +1,7 @@
 # ActsAsSelect
 
-TODO: Write a gem description
+acts_as_select creates a select style for each column in the database (except the primary key) and returns a 2d array
+in a form suitable for use in a selection drop down (hence the name)
 
 ## Installation
 
@@ -18,7 +19,17 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Include acts_as_select in your model file. This makes all columns accessible by calling select_<column_name>
+
+Example:
+  class Dummy < ActiveRecord::Base
+  acts_as_select
+  end
+
+If dummy had a name and description defined in the database, this would create
+the methods: select_description, select_name
+
+These can then be used anywhere you need a select.
 
 ## Contributing
 
