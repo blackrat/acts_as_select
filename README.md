@@ -1,6 +1,6 @@
 # ActsAsSelect
 
-TODO: Write a gem description
+  Creation of automatic selection-like 2D arrays suitable for drop downs from all column fields in an ActiveRecord table
 
 ## Installation
 
@@ -18,7 +18,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    In the ActiveRecord model for the reference data, add in acts_as_select to allow all fields to be select items
+
+    e.g.
+
+    class Dummy < ActiveRecord::Base
+      acts_as_select
+    end
+
+    If the Dummy model contains the columns name and description, this will create name_select and description_select methods
+    which will return 2D arrays with the column and primary key details.
 
 ## Contributing
 
