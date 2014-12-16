@@ -21,15 +21,35 @@ Or install it yourself as:
 
 Include acts_as_select in your model file. This makes all columns accessible by calling select_<column_name>
 
-Example:
-  class Dummy < ActiveRecord::Base
-  acts_as_select
-  end
+### Example
 
-If dummy had a name and description defined in the database, this would create
-the methods: select_description, select_name
+With this database table
 
-These can then be used anywhere you need a select.
+    | id | name |      email      |
+    |----|------|-----------------|
+    | 1  | Bob  | bob@example.com |
+    | 2  | Jen  | jen@example.com |
+
+And this model
+
+    class Person < ActiveRecord::Base
+      acts_as_select
+    end
+
+This would create two methods, `name_select` and `email_select`
+
+    Person.name_select
+    #=> [["Bob", 1], ["Jen", 2]]
+    Person.email_select
+    #=> [["bob@example.com", 1], ["jen@example.com", 2]]
+
+This is the right format for use in a select tag and friends
+
+    select :order, :customer, Person.name_select
+
+You can even combine it with scopes
+
+    Person.where(...).name_select
 
 ## Contributing
 
