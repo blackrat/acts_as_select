@@ -2,7 +2,7 @@ module ActsAsSelect
   def acts_as_select
     column_names.each do |field|
       class_eval %Q(
-                    if case Rails::VERSION_MAJOR < 3
+                    if Rails::VERSION_MAJOR < 3
                       named_scope :select_#{field}_objects, lambda {{:select => "#{field}, \#{primary_key}"}}
                     else
                       scope :select_#{field}_objects, lambda { select("#{field}, \#{primary_key}") }
