@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'acts_as_select'
-  spec.version       = '0.1.0'
+  spec.version       = ActiveRecord::Acts::Select::VERSION
   spec.authors       = ['Paul McKibbin']
   spec.email         = ['pmckibbin@gmail.com']
   spec.description   = %q{Creation of automatic selection suitable for drop downs from column fields in an ActiveRecord table}
