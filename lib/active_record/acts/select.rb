@@ -3,7 +3,9 @@ module ActiveRecord
     module Select
       class << self
         def included(base)
-          base.extend ClassMethods
+          base.instance_eval do
+            extend ClassMethods
+          end
         end
       end
 
@@ -14,40 +16,41 @@ module ActiveRecord
 
       module ClassMethods
         private
+        def default_opts
+          {
+            :include=>column_names,
+            :exclude=>[]
+          }
+        end
+
         def allowed_columns(*opts)
-          columns=opts[:enabled] || column_names
-          columns-=opts[:disabled]
+          opts=!opts.empty? && opts.first.is_a?(Hash) ? default_opts.merge(opts.first) : default_opts
+          opts[:include]=[opts[:include]] if opts[:include].is_a?(String)
+          opts[:exclude]=[opts[:exclude]] if opts[:exclude].is_a?(String)
+          column_names & (opts[:include]-opts[:exclude])
         end
 
         public
         def acts_as_select(*opts)
-          allowed_columns(opts).each do |field|
-            class_eval %Q(
-                          if Rails::VERSION::MAJOR > 2
-                            scope :select_#{field}_objects, lambda {{:select => "#{field}, \#{primary_key}"}}
-                          else
-                            named_scope :select_#{field}_objects, lambda {{:select => "#{field}, \#{primary_key}"}}
-                          end
-
-                          class << self
-                            def #{field}_select
-                              select_#{field}_objects.map{|x| [x.#{field}, x.send(x.class.primary_key)]}
-                            end
-
-                            def #{field}_list
-                              select_#{field}_objects.map(&:#{field})
-                            end
-
-                            def #{field}_objects
-                              select_#{field}_objects.map(&:#{field})
-                            end
-
-                          end
-                        )
+          allowed_columns(*opts).each do |field|
+            (class << self;self;end).class_eval do
+              define_method "#{field}_select" do
+                if respond_to?(:scoped)
+                  scoped(:select=>["#{field}, #{primary_key}"])
+                else
+                  select(field,primary_key)
+                end.map{|x| [x.send(field),x.send(primary_key)]}
+              end
+              define_method "#{field}_list" do
+                (respond_to?(:scoped) ? scoped(:select=>[field]) : select(field)).map{|x| x.send(field)}
+              end
+              define_method "#{field}_objects" do
+                respond_to?(:scoped) ? scoped(:select=>[field]) : select(field)
+              end
+            end
           end
         end
       end
-
     end
   end
 end
