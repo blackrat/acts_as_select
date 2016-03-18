@@ -1,7 +1,7 @@
 module ActiveRecord
   module Acts
     module Select
-      VERSION="0.1.2"
+      VERSION="0.1.3"
       class << self
         def included(base)
           base.instance_eval do
