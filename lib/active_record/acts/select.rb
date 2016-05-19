@@ -1,7 +1,7 @@
 module ActiveRecord
   module Acts
     module Select
-      VERSION="0.1.3"
+      VERSION="0.1.4"
       class << self
         def included(base)
           base.instance_eval do
@@ -37,7 +37,7 @@ module ActiveRecord
             (class << self;self;end).class_eval do
               define_method "#{field}_select" do
                 if respond_to?(:scoped)
-                  scoped(:select=>["#{field}, #{primary_key}"])
+                  scoped(:select=>"#{field}, #{primary_key}")
                 else
                   select(field,primary_key)
                 end.map{|x| [x.send(field),x.send(primary_key)]}
