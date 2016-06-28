@@ -35,7 +35,7 @@ This makes all columns database accessible. You can return selectable options by
 obtain a list of the contents of a column by calling <column_name>_list
 
 ### Options
-acts_as_select takes two options to allow for finer grained control over which methods are created:
+acts_as_select takes two options to allow for finer grained control over which methods are created and allows for scoping to restrict or change order.
 
     :include => [column_list]
 
@@ -55,32 +55,60 @@ names in both lists, these columns are excluded, regardless of the order of the 
 
 With this database table
 
-    | id | name |      email      |
-    |----|------|-----------------|
-    | 1  | Bob  | bob@example.com |
-    | 2  | Jen  | jen@example.com |
+    | id | name |       email      |
+    |----|------|------------------|
+    | 1  | Bob  | bob@example.com  |
+    | 2  | Jen  | jen@example.com  |
+    | 3 | april | sheri@example.com|
 
 And this model
 
     class Person < ActiveRecord::Base
-      acts_as_select :include=>['name', 'email'], :exclude=>['id']
+      acts_as_select :include=>['name', 'email'], :exclude=>'id'
     end
 
 This would create two select methods, `name_select` and `email_select`,
-and three list methods `name_list` and `email_list`
+and four list methods `name_list`, `name_objects`, `email_list` and `email_objects`.
 
     Person.name_select
-    #=> [["Bob", 1], ["Jen", 2]]
+    #=> [["Bob", 1], ["Jen", 2], ["april", 3]]
     Person.email_select
-    #=> [["bob@example.com", 1], ["jen@example.com", 2]]
+    #=> [["bob@example.com", 1], ["jen@example.com", 2], ["april@example.com",3]]
+    Person.name_list
+    #=> ['Bob','Jen','april']
+    
+The name_objects is a special form that returns objects of the same class as the model, but with only the 
+quoted name and id fields. Effectively it returns the the same values as the name_select, but as an ActiveRecord 
+Relation object form with only name and id relationships, which can then be mapped out to other forms
+    
+    Person.name_objects
+    #=> <Person::ActiveRecord_Relation:0x000000002911234>
+    Person.name_objects.to_a
+    #=> [<Person:0x00000002917998>,<Person:0x00000002918730>,<Person:0x0000000267ed58>]
+    Person.name_objects.to_a.map(&:attributes)
+    #=> [{'id'=>1, 'name'=>'Bob'},{'id'=>2, 'name'=>'Jen'},{'id'=>3, 'name'=>'april'}] 
 
 This is the right format for use in a select tag and friends
 
     select :order, :customer, Person.name_select
 
-You can combine it with scopes
+If you want to change the sorting of the table, based on a non-chosen field (for example), you can use
+arel_scopes to do so. The same `email_select` and `email_list` can have their contents sorted by the 
+lowercase corrected name (for example)
 
-    Person.where(...).name_select
+    Person.order('lower(name) asc').email_select
+    #=> [["sheri@example.com", 3], ["bob@example.com", 1], ["jen@example.com", 2]]
+
+You can combine it with any other named_scopes, scopes or scoping methods, but as it maps to an array
+for use in a select dropdown, it will need to be the last method on the chain.
+
+    Person.where(...).group(...).order(...).name_select
+    
+The one exception to this is the name_objects format, which returns a relation and hence
+can be used inline with the rest of the scopes.
+
+    Person.name_objects.order('name asc').to_sql
+    #=> "SELECT name, id FROM "people" ORDER BY name asc"
 
 ## Contributing
 

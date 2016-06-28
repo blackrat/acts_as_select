@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'sqlite3'
   if RUBY_VERSION >= '1.9'
     spec.add_development_dependency 'minitest'
-    spec.add_development_dependency 'active_record'
+    spec.add_development_dependency 'activerecord'
   else
     spec.add_development_dependency 'test-unit'
     spec.add_development_dependency 'activerecord'
