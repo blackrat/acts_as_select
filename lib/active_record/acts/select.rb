@@ -1,7 +1,7 @@
 module ActiveRecord
   module Acts
     module Select
-      VERSION="0.1.6"
+      VERSION="0.1.7"
       class << self
         def included(base)
           base.instance_eval do
@@ -26,8 +26,8 @@ module ActiveRecord
 
         def allowed_columns(*opts)
           opts=!opts.empty? && opts.first.is_a?(Hash) ? default_opts.merge(opts.first) : default_opts
-          opts[:include]=[opts[:include]] if opts[:include].is_a?(String)
-          opts[:exclude]=[opts[:exclude]] if opts[:exclude].is_a?(String)
+          opts[:include]=[opts[:include]].flatten.map(&:to_s)
+          opts[:exclude]=[opts[:exclude]].flatten.map(&:to_s)
           column_names & (opts[:include]-opts[:exclude])
         end
 

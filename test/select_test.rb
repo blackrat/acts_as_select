@@ -36,7 +36,9 @@ class Selection < ActiveRecord::Base
 end
 class SelectAll < Selection
 end
-class SelectIncludeSingle < Selection
+class SelectIncludeSingleString < Selection
+end
+class SelectIncludeSingleSymbol < Selection
 end
 class SelectIncludeMulti < Selection
 end
@@ -52,7 +54,7 @@ end
 class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
   def setup
     setup_db
-    [SelectAll, SelectIncludeSingle, SelectIncludeMulti, SelectExcludeSingle, SelectExcludeMulti, SelectedIncludeExclude, SelectCollectionSingle].each do |klass|
+    [SelectAll, SelectIncludeSingleString, SelectIncludeSingleSymbol, SelectIncludeMulti, SelectExcludeSingle, SelectExcludeMulti, SelectedIncludeExclude, SelectCollectionSingle].each do |klass|
       klass.create! :name => 'first',  :description => 'First field',  :excluded_string => 'not allowed'
       klass.create! :name => 'second', :description => 'Second field', :excluded_string => 'not allowed'
       klass.create! :name => 'third',  :description => 'Third field',  :excluded_string => 'not allowed'
@@ -139,25 +141,38 @@ class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
     assert_raises(NoMethodError) { Selection.wibble_select }
   end
 
-  def test_single_field_selection
-    SelectIncludeSingle.acts_as_select :include => 'name'
-    assert_raises(NoMethodError) { SelectIncludeSingle.id_select }
-    assert_raises(NoMethodError) { SelectIncludeSingle.id_list }
-    assert_equal(selection_names.map { |x| [x[0], x[1]+6] },SelectIncludeSingle.name_select)
-    assert_equal(selection_names.map(&:first),SelectIncludeSingle.name_list)
-    assert_raises(NoMethodError) { SelectIncludeSingle.description_select }
-    assert_raises(NoMethodError) { SelectIncludeSingle.description_list }
-    assert_raises(NoMethodError) { SelectIncludeSingle.excluded_string_select }
-    assert_raises(NoMethodError) { SelectIncludeSingle.excluded_string_list }
+  #TODO: Get round to changing the +6 multiple to allow me to add things into the middle without having to change the following tests.
+  def test_single_field_selection_with_string
+    SelectIncludeSingleString.acts_as_select :include => 'name'
+    assert_raises(NoMethodError) { SelectIncludeSingleString.id_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleString.id_list }
+    assert_equal(selection_names.map { |x| [x[0], x[1]+6] }, SelectIncludeSingleString.name_select)
+    assert_equal(selection_names.map(&:first), SelectIncludeSingleString.name_list)
+    assert_raises(NoMethodError) { SelectIncludeSingleString.description_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleString.description_list }
+    assert_raises(NoMethodError) { SelectIncludeSingleString.excluded_string_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleString.excluded_string_list }
+  end
+
+  def test_single_field_selection_with_symbol
+    SelectIncludeSingleSymbol.acts_as_select :include => :name
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.id_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.id_list }
+    assert_equal(selection_names.map { |x| [x[0], x[1]+12] }, SelectIncludeSingleSymbol.name_select)
+    assert_equal(selection_names.map(&:first), SelectIncludeSingleSymbol.name_list)
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.description_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.description_list }
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.excluded_string_select }
+    assert_raises(NoMethodError) { SelectIncludeSingleSymbol.excluded_string_list }
   end
 
   def test_multi_field_selection
     SelectIncludeMulti.acts_as_select :include => %w(name description)
     assert_raises(NoMethodError) { SelectIncludeMulti.id_select }
     assert_raises(NoMethodError) { SelectIncludeMulti.id_list }
-    assert_equal(selection_names.map { |x| [x[0], x[1]+12] },SelectIncludeMulti.name_select)
+    assert_equal(selection_names.map { |x| [x[0], x[1]+18] },SelectIncludeMulti.name_select)
     assert_equal(selection_names.map(&:first), SelectIncludeMulti.name_list)
-    assert_equal(selection_descriptions.map { |x| [x[0], x[1]+12] },SelectIncludeMulti.description_select)
+    assert_equal(selection_descriptions.map { |x| [x[0], x[1]+18] },SelectIncludeMulti.description_select)
     assert_equal(selection_descriptions.map(&:first),SelectIncludeMulti.description_list)
     assert_raises(NoMethodError) { SelectIncludeMulti.excluded_string_select }
     assert_raises(NoMethodError) { SelectIncludeMulti.excluded_string_list }
@@ -165,11 +180,11 @@ class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
 
   def test_single_field_exclusion
     SelectExcludeSingle.acts_as_select :exclude => 'excluded_string'
-    assert_equal(selection_ids.map { |x| [x[0]+18, x[1]+18] },SelectExcludeSingle.id_select)
-    assert_equal(selection_ids.map { |x| x[0]+18 },SelectExcludeSingle.id_list)
-    assert_equal(selection_names.map { |x| [x[0], x[1]+18] },SelectExcludeSingle.name_select)
+    assert_equal(selection_ids.map { |x| [x[0]+24, x[1]+24] },SelectExcludeSingle.id_select)
+    assert_equal(selection_ids.map { |x| x[0]+24 },SelectExcludeSingle.id_list)
+    assert_equal(selection_names.map { |x| [x[0], x[1]+24] },SelectExcludeSingle.name_select)
     assert_equal(selection_names.map(&:first),SelectExcludeSingle.name_list)
-    assert_equal(selection_descriptions.map { |x| [x[0], x[1]+18] },SelectExcludeSingle.description_select)
+    assert_equal(selection_descriptions.map { |x| [x[0], x[1]+24] },SelectExcludeSingle.description_select)
     assert_equal(selection_descriptions.map(&:first),SelectExcludeSingle.description_list)
     assert_raises(NoMethodError) { SelectExcludeSingle.excluded_string_select }
     assert_raises(NoMethodError) { SelectExcludeSingle.excluded_string_list }
@@ -177,9 +192,9 @@ class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
 
   def test_multi_field_exclusion
     SelectExcludeMulti.acts_as_select :exclude => %w(description excluded_string)
-    assert_equal(selection_ids.map { |x| [x[0]+24, x[1]+24] },SelectExcludeMulti.id_select)
-    assert_equal(selection_ids.map { |x| x[0]+24 },SelectExcludeMulti.id_list)
-    assert_equal(selection_names.map { |x| [x[0], x[1]+24] },SelectExcludeMulti.name_select)
+    assert_equal(selection_ids.map { |x| [x[0]+30, x[1]+30] },SelectExcludeMulti.id_select)
+    assert_equal(selection_ids.map { |x| x[0]+30 },SelectExcludeMulti.id_list)
+    assert_equal(selection_names.map { |x| [x[0], x[1]+30] },SelectExcludeMulti.name_select)
     assert_equal(selection_names.map(&:first),SelectExcludeMulti.name_list)
     assert_raises(NoMethodError) { SelectExcludeMulti.description_select }
     assert_raises(NoMethodError) { SelectExcludeMulti.description_list }
@@ -191,7 +206,7 @@ class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
     SelectedIncludeExclude.acts_as_select :include => %w(name description), :exclude => %w(description excluded_string)
     assert_raises(NoMethodError) { SelectedIncludeExclude.id_select }
     assert_raises(NoMethodError) { SelectedIncludeExclude.id_list }
-    assert_equal(selection_names.map { |x| [x[0], x[1]+30] },SelectedIncludeExclude.name_select)
+    assert_equal(selection_names.map { |x| [x[0], x[1]+36] },SelectedIncludeExclude.name_select)
     assert_equal(selection_names.map(&:first),SelectedIncludeExclude.name_list)
     assert_raises(NoMethodError) { SelectedIncludeExclude.description_select }
     assert_raises(NoMethodError) { SelectedIncludeExclude.description_list }
@@ -200,8 +215,8 @@ class SelectTest < (begin MiniTest::Test rescue Test::Unit::TestCase end)
   end
 
   def test_sorted_fields
-    SelectIncludeSingle.acts_as_select :include => 'name'
-    assert_equal(selection_names_sorted.map { |x| [x[0], x[1]+6] },SelectIncludeSingle.order('name asc').name_select)
+    SelectIncludeSingleString.acts_as_select :include => 'name'
+    assert_equal(selection_names_sorted.map { |x| [x[0], x[1]+6] }, SelectIncludeSingleString.order('name asc').name_select)
   end
 
   def test_sorted_field_collections

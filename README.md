@@ -51,6 +51,13 @@ This specifies which columns are excluded from having the _select and _list meth
 When both options are supplied, the exclusion happens after the inclusion. That is, if there are overlapping column
 names in both lists, these columns are excluded, regardless of the order of the options.
 
+If you only want a single column type to be included (or excluded), these can be passed as a symbol or string
+
+    :include => :column_1
+or
+
+    :include => 'column_1'
+
 ### Example
 
 With this database table
